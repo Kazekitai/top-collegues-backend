@@ -31,6 +31,7 @@ public class ColleguesController {
 	
 	@PostMapping("/creer")
 	public @ResponseBody Collegue ajouterCollegue(@RequestBody Collegue collegue) {
+		System.out.println(collegue.getPseudo());
 		Collegue nouveauCollege = new Collegue();
 		nouveauCollege.setPseudo(collegue.getPseudo());
 		nouveauCollege.setImageUrl(collegue.getImageUrl());
