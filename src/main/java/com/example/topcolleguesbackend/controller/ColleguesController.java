@@ -13,6 +13,8 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 import com.example.topcolleguesbackend.entity.Collegue;
 import com.example.topcolleguesbackend.repository.ColleguesRepository;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
  * Controller pour l'api Collegue
@@ -30,15 +32,41 @@ public class ColleguesController {
 	}
 	
 	@PostMapping("/creer")
-	public @ResponseBody Collegue ajouterCollegue(@RequestBody Collegue collegue) {
-		System.out.println(collegue.getPseudo());
+	public @ResponseBody HashMap<String,String> ajouterCollegue(@RequestBody Collegue collegue) {
 		Collegue nouveauCollege = new Collegue();
-		nouveauCollege.setPseudo(collegue.getPseudo());
-		nouveauCollege.setImageUrl(collegue.getImageUrl());
-		nouveauCollege.setScore(0);
-		colleguesRepository.save(nouveauCollege);
+		String message = "";
+		String succes = "false";
+		String jsonInString ="";
+		//Tester si le collegue existe déjà
+		List<Collegue> collegList = colleguesRepository.findByPseudo(collegue.getPseudo());
+		if(collegList.size() > 0) {
+			//Existe
+			message = "Le collègue " + collegue.getPseudo() + " existe déjà !";
+		} else {
+			//N'existe pas
+			nouveauCollege.setPseudo(collegue.getPseudo());
+			nouveauCollege.setImageUrl(collegue.getImageUrl());
+			nouveauCollege.setScore(0);
+			colleguesRepository.save(nouveauCollege);
+			succes = "true";
+			message = "Le collègue " + nouveauCollege.getPseudo() + " a été ajouté avec succès";
+		}
+		
+		ObjectMapper mapper = new ObjectMapper();
+		try {
+			jsonInString = mapper.writeValueAsString(nouveauCollege);
+		} catch (JsonProcessingException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		HashMap<String,String> result = new HashMap<String,String>();
+		result.put("succes", succes);
+		result.put("message", message);
+		result.put("entite", jsonInString);
+		
 
-		return nouveauCollege;
+		return result;
 	}
 	
 	
