@@ -31,6 +31,11 @@ public class ColleguesController {
 		return this.colleguesRepository.findAll();
 	}
 	
+	@GetMapping("/{PSEUDO}")
+	public List<Collegue> getCollaborateursByPseudo(@PathVariable("PSEUDO") String pseudo) {
+		return this.colleguesRepository.findByPseudo(pseudo);
+	}
+	
 	@PostMapping("/creer")
 	public @ResponseBody HashMap<String,String> ajouterCollegue(@RequestBody Collegue collegue) {
 		Collegue nouveauCollege = new Collegue();
