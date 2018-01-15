@@ -12,7 +12,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 import com.example.topcolleguesbackend.entity.Collegue;
+import com.example.topcolleguesbackend.entity.Vote;
 import com.example.topcolleguesbackend.repository.ColleguesRepository;
+import com.example.topcolleguesbackend.repository.VoteRepository;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -25,6 +27,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 @RequestMapping("/collegues")
 public class ColleguesController {
 	@Autowired private ColleguesRepository colleguesRepository;
+	@Autowired private VoteRepository voteRepository;
 	
 	@GetMapping
 	public List<Collegue> listercollaborateurs() {
@@ -35,6 +38,7 @@ public class ColleguesController {
 	public List<Collegue> getCollaborateursByPseudo(@PathVariable("PSEUDO") String pseudo) {
 		return this.colleguesRepository.findByPseudo(pseudo);
 	}
+	
 	
 	@PostMapping("/creer")
 	public @ResponseBody HashMap<String,String> ajouterCollegue(@RequestBody Collegue collegue) {
@@ -86,6 +90,13 @@ public class ColleguesController {
 		} else if(actionType.get("action").equals("detester")) {
 			collegbModif.setScore(scoreInit-5);
 		}
+		
+		// Ajouter un vote dans l'historique des votes
+		Vote vote = new Vote();
+		vote.setAvis(actionType.get("action"));
+		vote.setCollegue(collegbModif);
+		this.voteRepository.save(vote);
+		
 		colleguesRepository.save(collegbModif);
 	    return collegbModif;
 	}
