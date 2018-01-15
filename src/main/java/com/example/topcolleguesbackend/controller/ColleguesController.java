@@ -15,8 +15,6 @@ import com.example.topcolleguesbackend.entity.Collegue;
 import com.example.topcolleguesbackend.entity.Vote;
 import com.example.topcolleguesbackend.repository.ColleguesRepository;
 import com.example.topcolleguesbackend.repository.VoteRepository;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
  * Controller pour l'api Collegue
@@ -41,38 +39,36 @@ public class ColleguesController {
 	
 	
 	@PostMapping("/creer")
-	public @ResponseBody HashMap<String,String> ajouterCollegue(@RequestBody Collegue collegue) {
+	public @ResponseBody HashMap<String,Object> ajouterCollegue(@RequestBody Collegue collegue) {
 		Collegue nouveauCollege = new Collegue();
 		String message = "";
 		String succes = "false";
-		String jsonInString ="";
-		//Tester si le collegue existe déjà
+		//Tester si le collegue existe déjà. On ne le sauvegarde pas.
 		List<Collegue> collegList = colleguesRepository.findByPseudo(collegue.getPseudo());
-		if(collegList.size() > 0) {
-			//Existe
-			message = "Le collègue " + collegue.getPseudo() + " existe déjà !";
+		if(!collegue.getPseudo().equals("") && !collegue.getImageUrl().equals("") ) {
+			// Pseudo et image non vide
+			if(collegList.size() > 0) {
+				//Le collegue existe
+				message = "Le collègue " + collegue.getPseudo() + " existe déjà !";
+			} else {
+				//Le collegue n'existe pas. On le sauvegarde.
+				nouveauCollege.setPseudo(collegue.getPseudo());
+				nouveauCollege.setImageUrl(collegue.getImageUrl());
+				nouveauCollege.setScore(0);
+				colleguesRepository.save(nouveauCollege);
+				succes = "true";
+				message = "Le collègue " + nouveauCollege.getPseudo() + " a été ajouté avec succès";
+			}
 		} else {
-			//N'existe pas
-			nouveauCollege.setPseudo(collegue.getPseudo());
-			nouveauCollege.setImageUrl(collegue.getImageUrl());
-			nouveauCollege.setScore(0);
-			colleguesRepository.save(nouveauCollege);
-			succes = "true";
-			message = "Le collègue " + nouveauCollege.getPseudo() + " a été ajouté avec succès";
+			// Pseudo et image vide ! On ne sauvegarde rien.
+			message = "Tous les champs sont obligatoires !";
 		}
 		
-		ObjectMapper mapper = new ObjectMapper();
-		try {
-			jsonInString = mapper.writeValueAsString(nouveauCollege);
-		} catch (JsonProcessingException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
 		
-		HashMap<String,String> result = new HashMap<String,String>();
+		HashMap<String,Object> result = new HashMap<String,Object>();
 		result.put("succes", succes);
 		result.put("message", message);
-		result.put("entite", jsonInString);
+		result.put("entite", nouveauCollege);
 		
 
 		return result;
