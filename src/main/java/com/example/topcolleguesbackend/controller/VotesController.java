@@ -22,10 +22,16 @@ public class VotesController {
 	
 	@GetMapping
 	public List<Vote> getVotes(@RequestParam("since") String vote_id) {
+		List<Vote> votes = this.voteRepository.findAll();
 		if(vote_id != "" ) {
-			return this.voteRepository.findAll().stream().filter(v -> v.getId() >= Integer.valueOf(vote_id)).collect(Collectors.toList());
+			return votes.stream().filter(v -> v.getId() > Integer.valueOf(vote_id)).collect(Collectors.toList());
+		} 
+		if(votes.size() > 3) {
+			return votes.subList(votes.size()-3, votes.size());
+		} else {
+			return votes;
 		}
-		return this.voteRepository.findAll();
+		
 	}
 
 }
